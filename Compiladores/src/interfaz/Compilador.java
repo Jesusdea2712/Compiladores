@@ -1,10 +1,13 @@
 package interfaz;
 
 import domain.Archivo;
+import domain.Token;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
@@ -43,6 +46,7 @@ public class Compilador extends javax.swing.JFrame {
         txaArchivo = new javax.swing.JTextArea();
         jScrollPane2 = new javax.swing.JScrollPane();
         txaResultado = new javax.swing.JTextArea();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -77,6 +81,13 @@ public class Compilador extends javax.swing.JFrame {
         txaResultado.setRows(5);
         jScrollPane2.setViewportView(txaResultado);
 
+        jButton1.setText("Analizador Lexico");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -99,6 +110,10 @@ public class Compilador extends javax.swing.JFrame {
                         .addGap(0, 6, Short.MAX_VALUE))
                     .addComponent(jScrollPane2))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addGap(218, 218, 218)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -114,7 +129,9 @@ public class Compilador extends javax.swing.JFrame {
                     .addComponent(btnValidar))
                 .addGap(37, 37, 37)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jButton1)
+                .addGap(5, 5, 5)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(47, Short.MAX_VALUE))
         );
@@ -160,6 +177,46 @@ public class Compilador extends javax.swing.JFrame {
         txaResultado.setText(resultado);
     }//GEN-LAST:event_btnValidarActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        String input = txaArchivo.getText();
+        //String input = "300 220 129 while [ ] case => = <= < for > <> ( ) if else";
+        String cadena ="";
+        ArrayList<Token> tokens = lex(input);
+        for (Token token : tokens) {
+            //System.out.println("(" + token.getTipo() + ": " + token.getValor() +")");
+            cadena+= "(" + token.getTipo() + ": " + token.getValor() +")"+"\n";
+        }
+        
+        txaResultado.setText(cadena);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private static ArrayList<Token> lex(String input) {
+        final ArrayList<Token> tokens = new ArrayList<Token>();
+        final StringTokenizer st = new StringTokenizer(input);
+
+        while(st.hasMoreTokens()) {
+            String palabra = st.nextToken();
+            boolean matched = false;
+
+            for (Token.Tipos tokenTipo : Token.Tipos.values()) {
+                Pattern patron = Pattern.compile(tokenTipo.patron, Pattern.MULTILINE);
+                Matcher matcher = patron.matcher(palabra);
+                if(matcher.find()) {
+                    Token tk = new Token();
+                    tk.setTipo(tokenTipo);
+                    tk.setValor(palabra);
+                    tokens.add(tk);
+                    matched = true;
+                }
+            }
+            if (!matched) {
+                throw new RuntimeException("Se encontró un token invalido.");
+            }
+        }
+       return tokens;
+    }
+    
     /**
      * @param args the command line arguments
      */
@@ -196,6 +253,7 @@ public class Compilador extends javax.swing.JFrame {
     private javax.swing.JButton btnArchivo;
     private javax.swing.JButton btnGuardar;
     private javax.swing.JButton btnValidar;
+    private javax.swing.JButton jButton1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea txaArchivo;
